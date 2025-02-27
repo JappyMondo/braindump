@@ -24,6 +24,7 @@ import {
 } from "@/components/canvas-toolbox";
 import { ToolboxThemeToggle } from "@/components/toolbox-theme-toggle";
 import { ToolboxLayoutToggle } from "@/components/toolbox-layout-toggle";
+import { useTheme } from "next-themes";
 
 export default function BraindumpApp() {
   const {

@@ -26,17 +26,20 @@ export function ToolboxThemeToggle() {
   }, [theme]);
 
   // Toggle function - for direct toggle
-  const toggleTheme = () => {
+  const toggleTheme = React.useCallback(() => {
+    let nextTheme = theme;
     if (theme === "dark") {
-      setTheme("light");
+      nextTheme = "light";
     } else if (theme === "light") {
-      setTheme("system");
+      nextTheme = "system";
     } else if (theme === "system") {
-      setTheme("dark");
+      nextTheme = "dark";
     } else {
       throw new Error(`Invalid theme: ${theme}`);
     }
-  };
+
+    setTheme(nextTheme);
+  }, [theme, setTheme]);
 
   const baseClass = "h-4 w-4 transition-all absolute";
   const visibleClass = "rotate-0 scale-100 dark:-rotate-90 dark:scale-100";
