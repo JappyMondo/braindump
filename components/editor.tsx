@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface EditorProps {
   value: string;
@@ -13,6 +14,7 @@ export function Editor({ onChange, className, value }: EditorProps) {
   const [internalValue, setInternalValue] = useState(value);
   const prevValueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const isMobile = useMediaQuery("(max-width: 990px)");
 
   // Keep the onChange ref updated
   useEffect(() => {
@@ -69,7 +71,10 @@ export function Editor({ onChange, className, value }: EditorProps) {
       <textarea
         value={internalValue}
         onChange={handleChange}
-        className="w-full min-h-full h-full resize-none bg-background p-4 pt-12 pb-12 text-lg leading-relaxed outline-none overflow-auto"
+        className={cn(
+          "w-full min-h-full h-full resize-none bg-background p-4 text-lg leading-relaxed outline-none overflow-auto",
+          isMobile ? "pt-16 pb-16" : "pt-12 pb-12 mx-6"
+        )}
         placeholder="Start brainstorming... (Markdown supported)"
         spellCheck="false"
         autoFocus

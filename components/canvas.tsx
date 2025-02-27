@@ -7,6 +7,8 @@ import {
   CanvasToolbox,
   CanvasToolboxButton,
 } from "@/components/canvas-toolbox";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 
 interface CanvasProps {
   content: string;
@@ -31,6 +33,8 @@ export function Canvas({
   title = "Untitled",
   isIdle = false,
 }: CanvasProps) {
+  const isMobile = useMediaQuery("(max-width: 990px)");
+
   // Function to download the content as a markdown file
   const handleDownload = () => {
     // Create a blob with the markdown content
@@ -66,7 +70,9 @@ export function Canvas({
       <CanvasToolbox
         position="top-right"
         isIdle={isIdle}
-        className="opacity-0 hover:opacity-100 focus-within:opacity-100"
+        className={
+          isMobile ? "" : "opacity-0 hover:opacity-100 focus-within:opacity-100"
+        }
       >
         {/* Offline indicator */}
         {isOffline && (
@@ -93,6 +99,7 @@ export function Canvas({
             title={
               showRawMarkdown ? "Show rendered markdown" : "Show raw markdown"
             }
+            label={isMobile ? (showRawMarkdown ? "View" : "Code") : undefined}
           />
         )}
 
@@ -101,13 +108,19 @@ export function Canvas({
           onClick={handleDownload}
           icon={<Download className="h-4 w-4" />}
           title="Download as markdown"
+          label={isMobile ? "Download" : undefined}
         />
       </CanvasToolbox>
 
       {/* Render raw markdown or the formatted markdown */}
       {showRawMarkdown ? (
         // Raw markdown display with syntax highlighting
-        <div className="h-full overflow-auto p-6 text-sm font-mono whitespace-pre-wrap shadow-inner">
+        <div
+          className={cn(
+            "h-full overflow-auto text-sm font-mono whitespace-pre-wrap shadow-inner",
+            isMobile ? "p-6 pt-16 pb-16" : "p-6"
+          )}
+        >
           {blocks.length > 0 ? (
             // Display blocks with syntax highlighting
             <div>
@@ -295,7 +308,12 @@ export function Canvas({
         </div>
       ) : (
         // Rendered markdown with the Markdown component
-        <div className="h-full overflow-auto shadow-inner">
+        <div
+          className={cn(
+            "h-full overflow-auto shadow-inner",
+            isMobile ? "pt-16 pb-16" : ""
+          )}
+        >
           <Markdown content={content} blocks={blocks} />
         </div>
       )}

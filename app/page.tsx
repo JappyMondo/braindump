@@ -38,7 +38,7 @@ export default function BraindumpApp() {
   } = useDocuments();
 
   const [showEditor, setShowEditor] = useState(true);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery("(max-width: 990px)");
   const [isProcessing, setIsProcessing] = useState(false);
   const isIdle = useMouseIdle(2000); // 2 seconds of no mouse movement
   const [editorSize, setEditorSize] = useState(50);
@@ -362,18 +362,18 @@ export default function BraindumpApp() {
     }
   }, [activeDoc, lastActiveDocId, updateDocument]);
 
-  const deleteActiveDocument = useCallback(async () => {
-    if (activeDoc) {
-      await deleteDocument(activeDoc.id);
-    }
-  }, [activeDoc, deleteDocument]);
-
   // UI should be disabled if there's an error loading documents
   const isUIDisabled = useMemo(() => !!docsError, [docsError]);
 
   // Toggle raw markdown view
   const toggleRawMarkdown = useCallback(() => {
     setShowRawMarkdown((prev) => !prev);
+  }, []);
+
+  // Toggle between editor and preview views (for mobile only)
+  const toggleEditorView = useCallback((show: boolean) => {
+    console.log("Toggling editor view to:", show);
+    setShowEditor(show);
   }, []);
 
   const EditorMemo = useMemo(() => {
@@ -462,34 +462,71 @@ export default function BraindumpApp() {
           )}
         </div>
 
-        {/* Floating document manager - moved to bottom left */}
-        <CanvasToolbox position="bottom-left" isIdle={isIdle}>
-          <DocumentManager
-            documents={documents}
-            activeDoc={activeDoc}
-            onDocumentSelect={selectDocument}
-            isLoading={isLoadingDocs}
-          />
-          <CanvasToolboxButton
-            onClick={createDocument}
-            icon={<FilePlus className="h-4 w-4" />}
-            title="New Document"
-            className="ml-1"
-          />
+        {/* Mobile layout navigation at the top */}
+        {isMobile && (
+          <CanvasToolbox position="top-right" isIdle={false} className="z-50">
+            <ToolboxLayoutToggle
+              value={showEditor}
+              onChange={toggleEditorView}
+            />
+            <ToolboxThemeToggle />
+          </CanvasToolbox>
+        )}
+
+        {/* Mobile sign out button - at top left */}
+        {isMobile && (
+          <CanvasToolbox position="top-left" isIdle={false} className="z-40">
+            <CanvasToolboxButton
+              onClick={signOut}
+              icon={<LogOut className="h-4 w-4" />}
+              title="Sign Out"
+              label="Sign Out"
+            />
+          </CanvasToolbox>
+        )}
+
+        {/* Floating document manager - at bottom left */}
+        <CanvasToolbox
+          position="bottom-left"
+          isIdle={isMobile ? false : isIdle}
+          className={
+            isMobile ? "z-40 bg-background/80 dark:bg-background/60" : ""
+          }
+        >
+          <div className="flex items-center w-full gap-2">
+            <div className="flex-grow">
+              <DocumentManager
+                documents={documents}
+                activeDoc={activeDoc}
+                onDocumentSelect={selectDocument}
+                isLoading={isLoadingDocs}
+              />
+            </div>
+            <CanvasToolboxButton
+              onClick={createDocument}
+              icon={<FilePlus className="h-4 w-4" />}
+              title="New Document"
+              label={isMobile ? "New" : undefined}
+              className="flex-shrink-0"
+            />
+          </div>
         </CanvasToolbox>
 
-        {/* Floating actions toolbox - moved to bottom middle */}
-        <CanvasToolbox position="bottom-center" isIdle={isIdle}>
-          {isMobile && (
-            <ToolboxLayoutToggle value={showEditor} onChange={setShowEditor} />
-          )}
-          <ToolboxThemeToggle />
-          <CanvasToolboxButton
-            onClick={signOut}
-            icon={<LogOut className="h-4 w-4" />}
-            title="Sign Out"
-          />
-        </CanvasToolbox>
+        {/* Sign out button - at bottom right for desktop only */}
+        {!isMobile && (
+          <CanvasToolbox
+            position="bottom-right"
+            className="z-40"
+            isIdle={isIdle}
+          >
+            <ToolboxThemeToggle />
+            <CanvasToolboxButton
+              onClick={signOut}
+              icon={<LogOut className="h-4 w-4" />}
+              title="Sign Out"
+            />
+          </CanvasToolbox>
+        )}
 
         {/* Main content area - removed top padding for full height */}
         <div className="w-full h-full">

@@ -2,9 +2,11 @@ import * as React from "react";
 import { Moon, Sun, WandSparkles } from "lucide-react";
 import { useTheme } from "next-themes";
 import { CanvasToolboxButton } from "@/components/canvas-toolbox";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 export function ToolboxThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const isMobile = useMediaQuery("(max-width: 990px)");
 
   // Load theme from localStorage
   React.useEffect(() => {
@@ -40,6 +42,16 @@ export function ToolboxThemeToggle() {
   const visibleClass = "rotate-0 scale-100 dark:-rotate-90 dark:scale-100";
   const hiddenClass = "rotate-90 scale-0 dark:rotate-0 dark:scale-0";
 
+  // Get theme label for mobile display
+  const getThemeLabel = () => {
+    if (isMobile) {
+      if (theme === "dark") return "Dark";
+      if (theme === "light") return "Light";
+      return "System";
+    }
+    return undefined;
+  };
+
   return (
     <CanvasToolboxButton
       icon={
@@ -58,11 +70,12 @@ export function ToolboxThemeToggle() {
             className={
               baseClass +
               " " +
-              (theme === "system" ? visibleClass : hiddenClass)
+              (!theme || theme === "system" ? visibleClass : hiddenClass)
             }
           />
         </div>
       }
+      label={getThemeLabel()}
       title={`Current theme: ${theme} (click to cycle)`}
       onClick={toggleTheme}
     />

@@ -8,6 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Document } from "@/lib/types";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 
 interface DocumentManagerProps {
   documents: Document[];
@@ -22,6 +24,8 @@ export function DocumentManager({
   onDocumentSelect,
   isLoading,
 }: DocumentManagerProps) {
+  const isMobile = useMediaQuery("(max-width: 990px)");
+
   return (
     <Select
       value={activeDoc?.id}
@@ -33,12 +37,12 @@ export function DocumentManager({
       }}
       disabled={isLoading}
     >
-      <SelectTrigger className="w-[200px]">
+      <SelectTrigger className={cn("w-[200px]", isMobile && "w-full text-sm")}>
         <SelectValue
           placeholder={isLoading ? "Loading..." : "Select a document"}
         />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className={isMobile ? "w-[200px]" : ""}>
         {documents.map((doc) => (
           <SelectItem
             key={doc.id}
