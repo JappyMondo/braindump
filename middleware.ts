@@ -39,8 +39,11 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - site.webmanifest (web app manifest)
+     * - android-chrome (PWA icons)
+     * - apple-touch-icon (iOS icons)
+     * - SVG files
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.svg).*)",
+    "/((?!_next/static|_next/image|favicon.ico|site.webmanifest|android-chrome|apple-touch-icon|.*\\.svg).*)",
   ],
 };
