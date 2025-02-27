@@ -49,6 +49,15 @@ export default function BraindumpApp() {
   const [lastActiveDocId, setLastActiveDocId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Store latest state values in refs to avoid closure issues
+  const activeDocRef = useRef(activeDoc);
+  const editorContentRef = useRef(editorContent);
+  const lastProcessedContentLengthRef = useRef(0);
+
+  // Store debounced functions in refs to prevent recreation
+  const updateContentDebouncedRef = useRef<Function | null>(null);
+  const transformWithAiDebouncedRef = useRef<Function | null>(null);
+
   // Load panel sizes from localStorage
   useEffect(() => {
     const savedEditorSize = localStorage.getItem("editorSize");
@@ -86,6 +95,8 @@ export default function BraindumpApp() {
         );
         return;
       }
+
+      lastProcessedContentLengthRef.current = currentActiveDoc.content.length;
 
       // Generate a simple hash of the content
       const contentHash = await generateContentHash(currentActiveDoc.content);
@@ -135,7 +146,7 @@ export default function BraindumpApp() {
     } finally {
       setIsProcessing(false);
     }
-  }, [updateDocument]);
+  }, [updateDocument, lastProcessedContentLengthRef, activeDocRef]);
 
   // Helper function to generate a simple hash
   const generateContentHash = async (content: string): Promise<string> => {
@@ -148,14 +159,6 @@ export default function BraindumpApp() {
       .join("");
     return hashHex;
   };
-
-  // Store debounced functions in refs to prevent recreation
-  const updateContentDebouncedRef = useRef<Function | null>(null);
-  const transformWithAiDebouncedRef = useRef<Function | null>(null);
-
-  // Store latest state values in refs to avoid closure issues
-  const activeDocRef = useRef(activeDoc);
-  const editorContentRef = useRef(editorContent);
 
   // Keep refs updated with latest values
   useEffect(() => {
@@ -272,7 +275,9 @@ export default function BraindumpApp() {
       );
 
       // Calculate the magnitude of the change
-      const changeSize = Math.abs(content.length - editorContent.length);
+      const changeSize = Math.abs(
+        content.length - lastProcessedContentLengthRef.current
+      );
       const isSignificantChange = changeSize >= 10;
 
       // Also consider the total content length to handle slow typing
@@ -296,7 +301,12 @@ export default function BraindumpApp() {
         );
       }
     },
-    [updateContentDebounced, debouncedTransformWithAi, editorContent] // Need editorContent here for comparison
+    [
+      updateContentDebounced,
+      debouncedTransformWithAi,
+      editorContent,
+      lastProcessedContentLengthRef,
+    ] // Need editorContent here for comparison
   );
 
   useEffect(() => {
