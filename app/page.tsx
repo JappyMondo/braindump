@@ -9,7 +9,15 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useMouseIdle } from "@/hooks/use-mouse-idle";
 import { useDocuments } from "@/lib/hooks/use-documents";
 import debounce from "lodash/debounce";
-import { AlertCircle, FilePlus, LogOut, Loader2 } from "lucide-react";
+import {
+  AlertCircle,
+  FilePlus,
+  LogOut,
+  Loader2,
+  Download,
+  Code,
+  Eye,
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ResizablePanelGroup,
@@ -360,6 +368,22 @@ export default function BraindumpApp() {
     setShowRawMarkdown((prev) => !prev);
   }, []);
 
+  // Add download handler from Canvas
+  const handleDownload = useCallback(() => {
+    if (!activeDoc) return;
+
+    const content = activeDoc.content || "";
+    const blob = new Blob([content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${activeDoc.title || "Untitled"}.md`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }, [activeDoc]);
+
   const EditorMemo = useMemo(() => {
     console.log(
       "[BraindumpApp] Creating EditorMemo with content length:",
@@ -386,12 +410,11 @@ export default function BraindumpApp() {
         content={displayContent ?? ""}
         isProcessing={isProcessing}
         showRawMarkdown={showRawMarkdown}
-        onToggleRawMarkdown={toggleRawMarkdown}
         title={activeDoc?.title || "Untitled"}
         isIdle={isIdle}
       />
     );
-  }, [activeDoc, showRawMarkdown, isProcessing, toggleRawMarkdown, isIdle]);
+  }, [activeDoc, showRawMarkdown, isProcessing, isIdle]);
 
   return (
     <div className="h-screen w-full bg-background flex flex-col relative">
@@ -418,7 +441,7 @@ export default function BraindumpApp() {
       <main
         className={`flex-1 relative overflow-hidden ${
           isUIDisabled ? "pointer-events-none opacity-50" : ""
-        }`}
+        } ${isMobile ? "pt-16 pb-20" : ""}`}
       >
         {/* Status indicators - floating at the top center */}
         <div
@@ -446,7 +469,7 @@ export default function BraindumpApp() {
           )}
         </div>
 
-        {/* Floating document manager - moved to bottom left */}
+        {/* Document manager toolbox - positioned at bottom on mobile, bottom-left on desktop */}
         <CanvasToolbox position="bottom-left" isIdle={isIdle}>
           <DocumentManager
             documents={documents}
@@ -458,22 +481,76 @@ export default function BraindumpApp() {
             onClick={createDocument}
             icon={<FilePlus className="h-4 w-4" />}
             title="New Document"
-            className="ml-1"
+            className={isMobile ? "flex-1" : "ml-1"}
           />
+          {isMobile && (
+            <ToolboxLayoutToggle
+              value={showEditor}
+              onChange={setShowEditor}
+              className="flex-1"
+            />
+          )}
+          {/* Only show raw toggle in preview mode on mobile */}
+          {isMobile && !showEditor && (
+            <CanvasToolboxButton
+              onClick={toggleRawMarkdown}
+              icon={
+                showRawMarkdown ? (
+                  <Eye className="h-4 w-4" />
+                ) : (
+                  <Code className="h-4 w-4" />
+                )
+              }
+              title={
+                showRawMarkdown ? "Show rendered markdown" : "Show raw markdown"
+              }
+              className="flex-1"
+            />
+          )}
         </CanvasToolbox>
 
-        {/* Floating actions toolbox - moved to bottom middle */}
+        {/* Main actions toolbox - positioned at top on mobile, bottom-center on desktop */}
         <CanvasToolbox position="bottom-center" isIdle={isIdle}>
-          {isMobile && (
-            <ToolboxLayoutToggle value={showEditor} onChange={setShowEditor} />
-          )}
           <ToolboxThemeToggle />
           <CanvasToolboxButton
             onClick={signOut}
             icon={<LogOut className="h-4 w-4" />}
             title="Sign Out"
+            className={isMobile ? "flex-1" : ""}
           />
+          {isMobile && (
+            <CanvasToolboxButton
+              onClick={handleDownload}
+              icon={<Download className="h-4 w-4" />}
+              title="Download as markdown"
+              className="flex-1"
+            />
+          )}
         </CanvasToolbox>
+
+        {/* Desktop-only toolbox with raw view toggle and download */}
+        {!isMobile && (
+          <CanvasToolbox position="bottom-right" isIdle={isIdle}>
+            <CanvasToolboxButton
+              onClick={toggleRawMarkdown}
+              icon={
+                showRawMarkdown ? (
+                  <Eye className="h-4 w-4" />
+                ) : (
+                  <Code className="h-4 w-4" />
+                )
+              }
+              title={
+                showRawMarkdown ? "Show rendered markdown" : "Show raw markdown"
+              }
+            />
+            <CanvasToolboxButton
+              onClick={handleDownload}
+              icon={<Download className="h-4 w-4" />}
+              title="Download as markdown"
+            />
+          </CanvasToolbox>
+        )}
 
         {/* Main content area - removed top padding for full height */}
         <div className="w-full h-full">

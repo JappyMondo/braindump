@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface EditorProps {
   value: string;
@@ -13,6 +14,7 @@ export function Editor({ onChange, className, value }: EditorProps) {
   const [internalValue, setInternalValue] = useState(value);
   const prevValueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Keep the onChange ref updated
   useEffect(() => {
@@ -64,19 +66,29 @@ export function Editor({ onChange, className, value }: EditorProps) {
   return (
     <div className={cn("h-full relative group overflow-hidden", className)}>
       {/* Top fade gradient */}
-      <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none"></div>
+      <div
+        className={`absolute top-0 left-0 right-0 ${
+          isMobile ? "h-10" : "h-12"
+        } bg-gradient-to-b from-background to-transparent z-10 pointer-events-none`}
+      ></div>
 
       <textarea
         value={internalValue}
         onChange={handleChange}
-        className="w-full min-h-full h-full resize-none bg-background p-4 pt-12 pb-12 text-lg leading-relaxed outline-none overflow-auto"
+        className={`w-full min-h-full h-full resize-none bg-background p-4 ${
+          isMobile ? "pt-10 pb-12" : "pt-12 pb-12"
+        } text-lg leading-relaxed outline-none overflow-auto`}
         placeholder="Start brainstorming... (Markdown supported)"
         spellCheck="false"
         autoFocus
       />
 
       {/* Bottom fade gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none"></div>
+      <div
+        className={`absolute bottom-0 left-0 right-0 ${
+          isMobile ? "h-8" : "h-12"
+        } bg-gradient-to-t from-background to-transparent z-10 pointer-events-none`}
+      ></div>
     </div>
   );
 }
