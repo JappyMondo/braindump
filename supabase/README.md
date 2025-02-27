@@ -1,6 +1,6 @@
-# Supabase Setup for Brainstorm App
+# Supabase Setup for the Braindump App
 
-This directory contains the database schema and migrations for the Brainstorm app using Supabase.
+This directory contains the database schema and migrations for the Braindump app using Supabase.
 
 ## Prerequisites
 
