@@ -2,11 +2,9 @@ import * as React from "react";
 import { Moon, Sun, WandSparkles } from "lucide-react";
 import { useTheme } from "next-themes";
 import { CanvasToolboxButton } from "@/components/canvas-toolbox";
-import { useMediaQuery } from "@/hooks/use-media-query";
 
 export function ToolboxThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Load theme from localStorage
   React.useEffect(() => {
@@ -38,68 +36,35 @@ export function ToolboxThemeToggle() {
     }
   };
 
-  // Get theme display name
-  const getThemeLabel = () => {
-    switch (theme) {
-      case "light":
-        return "Light";
-      case "dark":
-        return "Dark";
-      case "system":
-        return "Auto";
-      default:
-        return "Theme";
-    }
-  };
-
-  // Render the icon based on current theme
-  const renderThemeIcon = () => {
-    // Use consistent icon sizing for all devices
-    const iconSize = isMobile ? "h-4 w-4" : "h-4 w-4";
-
-    if (isMobile) {
-      // Use a simplified approach for mobile - just show the current theme icon
-      if (theme === "light") {
-        return <Sun className={iconSize} />;
-      } else if (theme === "dark") {
-        return <Moon className={iconSize} />;
-      } else {
-        return <WandSparkles className={iconSize} />;
-      }
-    }
-
-    // For desktop, use the stacked animated icons
-    return (
-      <div className="relative w-4 h-4">
-        <Sun
-          className={`absolute h-4 w-4 transition-all ${
-            theme === "light" ? "opacity-100 scale-100" : "opacity-0 scale-0"
-          }`}
-        />
-        <Moon
-          className={`absolute h-4 w-4 transition-all ${
-            theme === "dark" ? "opacity-100 scale-100" : "opacity-0 scale-0"
-          }`}
-        />
-        <WandSparkles
-          className={`absolute h-4 w-4 transition-all ${
-            theme === "system" ? "opacity-100 scale-100" : "opacity-0 scale-0"
-          }`}
-        />
-      </div>
-    );
-  };
-
-  const currentTheme = theme || "system";
+  const baseClass = "h-4 w-4 transition-all absolute";
+  const visibleClass = "rotate-0 scale-100 dark:-rotate-90 dark:scale-100";
+  const hiddenClass = "rotate-90 scale-0 dark:rotate-0 dark:scale-0";
 
   return (
     <CanvasToolboxButton
-      icon={renderThemeIcon()}
-      title={`Theme: ${currentTheme} (click to cycle)`}
+      icon={
+        <div className="relative w-4 h-4">
+          <Sun
+            className={
+              baseClass + " " + (theme === "light" ? visibleClass : hiddenClass)
+            }
+          />
+          <Moon
+            className={
+              baseClass + " " + (theme === "dark" ? visibleClass : hiddenClass)
+            }
+          />
+          <WandSparkles
+            className={
+              baseClass +
+              " " +
+              (theme === "system" ? visibleClass : hiddenClass)
+            }
+          />
+        </div>
+      }
+      title={`Current theme: ${theme} (click to cycle)`}
       onClick={toggleTheme}
-      showLabel={isMobile}
-      label={isMobile ? getThemeLabel() : undefined}
-      className={isMobile ? "flex-1 h-9" : ""}
     />
   );
 }

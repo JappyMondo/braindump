@@ -1,14 +1,5 @@
 "use client";
-import {
-  Loader2,
-  MoveHorizontal,
-  Plus,
-  Minus,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  WifiOff,
-} from "lucide-react";
+import { WifiOff, Code, Eye, Download } from "lucide-react";
 import { Markdown } from "@/components/markdown";
 import { ContentBlock } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
@@ -24,6 +15,7 @@ interface CanvasProps {
   isOffline?: boolean;
   className?: string;
   showRawMarkdown?: boolean;
+  onToggleRawMarkdown?: () => void;
   title?: string;
   isIdle?: boolean;
 }
@@ -35,9 +27,39 @@ export function Canvas({
   isOffline = false,
   className = "",
   showRawMarkdown = false,
+  onToggleRawMarkdown,
   title = "Untitled",
   isIdle = false,
 }: CanvasProps) {
+  // Function to download the content as a markdown file
+  const handleDownload = () => {
+    // Create a blob with the markdown content
+    const blob = new Blob([content], { type: "text/markdown" });
+    // Create a URL for the blob
+    const url = URL.createObjectURL(blob);
+    // Create a temporary anchor element
+    const a = document.createElement("a");
+    // Set the download filename using the document title
+    const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    a.download = `${safeTitle}.md`;
+    // Set the URL
+    a.href = url;
+    // Append to the document body
+    document.body.appendChild(a);
+    // Trigger the download
+    a.click();
+    // Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // Show toast notification
+    toast({
+      title: "Download started",
+      description: `${title}.md has been downloaded.`,
+      duration: 3000,
+    });
+  };
+
   return (
     <div className={`relative flex flex-col h-full ${className}`}>
       {/* Status indicators - visible on hover at top right */}
@@ -53,6 +75,33 @@ export function Canvas({
             Offline
           </div>
         )}
+      </CanvasToolbox>
+
+      {/* Unified floating toolbox */}
+      <CanvasToolbox position="bottom-right" isIdle={isIdle}>
+        {/* Preview mode toggle button */}
+        {onToggleRawMarkdown && (
+          <CanvasToolboxButton
+            onClick={onToggleRawMarkdown}
+            icon={
+              showRawMarkdown ? (
+                <Eye className="h-4 w-4" />
+              ) : (
+                <Code className="h-4 w-4" />
+              )
+            }
+            title={
+              showRawMarkdown ? "Show rendered markdown" : "Show raw markdown"
+            }
+          />
+        )}
+
+        {/* Download button */}
+        <CanvasToolboxButton
+          onClick={handleDownload}
+          icon={<Download className="h-4 w-4" />}
+          title="Download as markdown"
+        />
       </CanvasToolbox>
 
       {/* Render raw markdown or the formatted markdown */}

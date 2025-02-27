@@ -4,13 +4,11 @@ import { CanvasToolboxButton } from "@/components/canvas-toolbox";
 interface ToolboxLayoutToggleProps {
   value: boolean;
   onChange: (value: boolean) => void;
-  className?: string;
 }
 
 export function ToolboxLayoutToggle({
   value,
   onChange,
-  className,
 }: ToolboxLayoutToggleProps) {
   return (
     <CanvasToolboxButton
@@ -19,7 +17,6 @@ export function ToolboxLayoutToggle({
       icon={
         value ? <Eye className="h-4 w-4" /> : <PencilLine className="h-4 w-4" />
       }
-      className={className}
     />
   );
 }
