@@ -275,13 +275,19 @@ export default function BraindumpApp() {
       const changeSize = Math.abs(content.length - editorContent.length);
       const isSignificantChange = changeSize >= 10;
 
+      // Also consider the total content length to handle slow typing
+      const isReasonableLength = content.length >= 110;
+      const shouldTriggerAi =
+        isSignificantChange ||
+        (isReasonableLength && content.length % 20 === 0);
+
       setEditorContent(content);
       updateContentDebounced();
 
-      // Only trigger AI processing for significant changes
-      if (isSignificantChange) {
+      // Trigger AI processing for significant changes or periodically at reasonable length
+      if (shouldTriggerAi) {
         console.log(
-          "[BraindumpApp] Significant content change detected, scheduling AI processing"
+          "[BraindumpApp] Content change detected that warrants AI processing"
         );
         debouncedTransformWithAi();
       } else {
